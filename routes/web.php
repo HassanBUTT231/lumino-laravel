@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::prefix('laravel')->group(function () {
     Route::get('/', function () {
-        return 'Hello from Laravel';
+        return 'Hello from Laravel, deployment through pipeline';
     });
 });
 
