@@ -8,7 +8,6 @@ phases:
   install:
     runtime-versions:
       php: 8.2
-      docker: 20
     commands:
       - curl -sS https://getcomposer.org/installer | php
       - php composer.phar install --no-dev --optimize-autoloader
