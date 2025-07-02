@@ -1,0 +1,38 @@
+version: 0.2
+env:
+  variables:
+    IMAGE_REPO_NAME: "lumino-laravel-app"
+    IMAGE_TAG: "latest"
+
+phases:
+  install:
+    runtime-versions:
+      php: 8.2
+      docker: 20
+    commands:
+      - curl -sS https://getcomposer.org/installer | php
+      - php composer.phar install --no-dev --optimize-autoloader
+      - cp .env.example .env
+      - php artisan key:generate
+  pre_build:
+    commands:
+      - echo "Logging into ECR..."
+      - aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 099199746132.dkr.ecr.us-east-1.amazonaws.com
+  build:
+    commands:
+      - echo "Build started"
+      - echo "Building the  Laravel Docker image..."
+      - docker build -t $IMAGE_REPO_NAME:$IMAGE_TAG .
+      - docker tag $IMAGE_REPO_NAME:$IMAGE_TAG 099199746132.dkr.ecr.us-east-1.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG
+  post_build:
+    commands:
+      - echo "Pushing Laravel image to ECR..."
+      - docker push 099199746132.dkr.ecr.us-east-1.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG
+      - echo Writing image definitions file...
+      - printf '[{"name":"lumino-laravel-app","imageUri":"%s"}]' "099199746132.dkr.ecr.us-east-1.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG" > imagedefinitions.json
+
+ 
+artifacts:
+  files:
+    - imagedefinitions.json
+    
